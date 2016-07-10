@@ -23,16 +23,24 @@ Projects for lightweight  repository discovery and management
 -------------------------------------------------------------
 
 - 18F has ``.about.yml``
-- Code for America has ``civic.json <https://github.com/codeforamerica/brigade/blob/master/README-Project-Search.md>`__. These are used by Code for America's `project search page <https://www.codeforamerica.org/brigade/projects>`__. Primarily it is used to denote the status of a project and to provide tags for search. It seems that a lot of information for the search page is also automatically obtained from GitHub metadata, like the project description.
+- Code for America has `civic.json <https://github.com/codeforamerica/brigade/blob/master/README-Project-Search.md>`__. These are used by Code for America's `project search page <https://www.codeforamerica.org/brigade/projects>`__. Primarily it is used to denote the status of a project and to provide tags for search. It seems that a lot of information for the search page is also automatically obtained from GitHub metadata, like the project description.
 
 JSON-LD
 -------
 
-- http://www.w3.org/TR/vocab-dcat/
-- https://github.com/codemeta/codemeta
-- `Builing a better book in the browser <http://journal.code4lib.org/articles/10668>`__
+- `JSON-LD best practices <http://json-ld.org/spec/latest/json-ld-api-best-practices/>`__.
+- `Buidling a better book in the browser <http://journal.code4lib.org/articles/10668>`__
 - `Linked Data Patterns <http://patterns.dataincubator.org/book/index.html>`__
 - `Indexing bibliographic linked data with JSON-LD, ElasticSearch <http://journal.code4lib.org/articles/7949>`__.
-- `JSON-LD: Building meaningful data APIs <http://blog.codeship.com/json-ld-building-meaningful-data-apis/>`__
+- `JSON-LD: Building meaningful data APIs <http://blog.codeship.com/json-ld-building-meaningful-data-apis/>`__.
+
+
+Metadata schemas (including those built around JSON-LD)
+-------------------------------------------------------
+
+- Overview of software metadata schemes in `Issue #117 of White House open source policy <https://github.com/WhiteHouse/source-code-policy/issues/117>`__.
+- https://github.com/codemeta/codemeta
 - http://schema.org
-- `JSON-LD best practices <http://json-ld.org/spec/latest/json-ld-api-best-practices/>`__.
+- http://www.w3.org/TR/vocab-dcat/
+- `Asset description metadata for software <https://joinup.ec.europa.eu/asset/adms_foss/home>`__ from the EU. See `Issue #41 at codemeta <https://github.com/codemeta/codemeta/issues/41>`__ as well.
+- `BibJSON <http://okfnlabs.org/bibjson/>`__, which is compatible with JSON-LD.
