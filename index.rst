@@ -15,3 +15,24 @@ Use cases for metadata embedded in Git repositories
 - Metadata for LSST DocHub to aid project discovery. The metadata will be ingested in ElasticSearch and accessible from a web API. This metadata will drive the summary display of projects in addition to providing search facets.
 - Metadata for project administration (e.g., who is the owner of a project?)
 - Analytics for LSST projects (how many people contribute to different projects, when was a project last updated?)
+
+Existing repository metadata systems
+====================================
+
+Projects for lightweight  repository discovery and management
+-------------------------------------------------------------
+
+- 18F has ``.about.yml``
+- Code for America has ``civic.json <https://github.com/codeforamerica/brigade/blob/master/README-Project-Search.md>`__. These are used by Code for America's `project search page <https://www.codeforamerica.org/brigade/projects>`__. Primarily it is used to denote the status of a project and to provide tags for search. It seems that a lot of information for the search page is also automatically obtained from GitHub metadata, like the project description.
+
+JSON-LD
+-------
+
+- http://www.w3.org/TR/vocab-dcat/
+- https://github.com/codemeta/codemeta
+- `Builing a better book in the browser <http://journal.code4lib.org/articles/10668>`__
+- `Linked Data Patterns <http://patterns.dataincubator.org/book/index.html>`__
+- `Indexing bibliographic linked data with JSON-LD, ElasticSearch <http://journal.code4lib.org/articles/7949>`__.
+- `JSON-LD: Building meaningful data APIs <http://blog.codeship.com/json-ld-building-meaningful-data-apis/>`__
+- http://schema.org
+- `JSON-LD best practices <http://json-ld.org/spec/latest/json-ld-api-best-practices/>`__.
