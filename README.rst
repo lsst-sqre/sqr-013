@@ -1,15 +1,17 @@
-####################################################################
-SQR-013 Metadata format for LSST code and documentation repositories
-####################################################################
+.. img:: https://img.shields.io/badge/developer-lsst.io-brightgreen.svg
+   :target: https://developer.lsst.io
+   :alt: Technote website
+.. img:: https://img.shields.io/travis/lsst-dm/dm_dev_guide/master.svg?maxAge=2592000
+   :target: https://travis-ci.org/lsst-dm/dm_dev_guide
+   :alt: Travis build status
 
-Research and design of a JSON-LD metadata system to enable the indexing of LSST code and documentation repositories
+###########################
+SQR-013: LSST DocHub Design
+###########################
 
-View this technote at https://sqr-013.lsst.io or see a preview of the
-current version in `this repo`_
+Research and design of a JSON-LD-based metadata database and API for LSST code and documentation repositories.
 
-.. _this repo: ./index.rst
-
-
+View this technote at https://sqr-013.lsst.io.
 
 ..
   Uncomment this section and modify the DOI strings to include a Zenodo DOI badge in the README
@@ -50,7 +52,7 @@ In this metadata you can edit the technote's title, authors, publication date, e
 
 ****
 
-Copyright 2016 AURA/LSST
+Copyright 2016 Association of Universities for Research in Astronomy Inc.
 
 This work is licensed under the Creative Commons Attribution 4.0 International License. To view a copy of this license, visit http://creativecommons.org/licenses/by/4.0/.
 

@@ -13,7 +13,7 @@ serial_number: '013'
 doc_id: 'SQR-013'
 
 # Title of the document, without the series/serial designation
-doc_title: 'Metadata format for LSST code and documentation repositories'
+doc_title: 'LSST DocHub Design'
 
 # Author names, ordered as a list. Each author name should be formatted as 'First Last'
 authors:
@@ -31,10 +31,10 @@ authors:
 # doi: 10.5281/zenodo.#####
 
 # Copyright statement
-copyright: '2016, AURA/LSST'
+copyright: '2016, Association of Universities for Research in Astronomy, Inc.'
 
 # Description. A short, 1-2 sentence statemement used by document indices.
-description: 'Research and design of a JSON-LD metadata system to enable the indexing of LSST code and documentation repositories'
+description: 'Research and design of a documentation metadata database and API for LSST based on JSON-LD metadata.'
 
 # Abstract, if available
 # abstract: >
