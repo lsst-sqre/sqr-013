@@ -67,3 +67,42 @@ JSON-LD Reading List
 - `Linked Data Patterns <http://patterns.dataincubator.org/book/index.html>`__
 - `Indexing bibliographic linked data with JSON-LD, ElasticSearch <http://journal.code4lib.org/articles/7949>`__.
 - `JSON-LD: Building meaningful data APIs <http://blog.codeship.com/json-ld-building-meaningful-data-apis/>`__.
+
+Ingest Adapters
+===============
+
+Ingest adapters are microservices that take an artifact in its native form, and index it in the DocHub databases.
+That is, it transforms the artifact's native metadata into DocHub JSON-LD metadata.
+Each type of artifact has a dedicated ingest adapter microservice.
+This way all platform-specific logic is contained within individual ingest adapter code bases.
+The DocHub API server does not largely need to know about platforms; it only needs to interpret metadata in DocHub's schema.
+
+Ingest adapters can either be designed for pulling artifact updates, or being pushed update's from the artifact's platform.
+For example, GitHub repositories can emit webhook events that trigger ingest adapters.
+Alternatively, ingest adapters can poll for updates from platforms that do not support webhooks.
+
+Example: Sphinx Technote Adapter
+--------------------------------
+
+This section explores how adapters work through the example of DM's Sphinx technotes.
+Technotes are GitHub repositories published through LSST the Docs.
+
+This adapter is a web (HTTP) server.
+It needs a public ingress, and should be in the same cluster (namely, Kubernetes cluster) as the MongoDB and Elasticsearch databases.
+
+The adapter has a ``HTTP POST`` endpoint that receives a `GitHub webhook <https://developer.github.com/webhooks/>`_ that is configured directly in the technote's GitHub repository.
+GitHub triggers webhooks for different events; the `PushEvent <https://developer.github.com/v3/activity/events/types/#pushevent>`_ is useful since it's triggered whenever the repository is updated with new content, regardless of the branch.
+From the webhook ``POST``, the adapter receives a payload of information about the commits in the push, including:
+
+- ``ref``: The Git ref that was pushed to (typically a branch name),
+- ``head``: The SHA ref of the HEAD of the commits. For GitHub repositories, DocHub only tracks the head of each branch or a tag, not individual commits.
+- ``commits``: an array of commit objects, including ``commits[][url]``, the API URL of each commit in the push.
+
+From this commit information, the adapter begins to build a metadata record for the repository.
+First, the adapter looks at the ``lsstmeta.json`` file in the repository.
+Most likely, this is a templated JSON-LD file (TODO: link to previous section), which requires the adapter to run metadata interpolators to build a complete ``lsstmeta.json`` JSON-LD file.
+To facilitate this, the adapter performs a shallow clone of the entire repository so that the adapter's interpolation pipeline can scrape metadata from the repository content (such as the document's title and abstract).
+The adapter can also GitHub's API to query for structured information that GitHub has about the repository, such as committers to build authorship metadata, or parsed license information.
+Once built, the adapter inserts the JSON-LD object in the resource's MongoDB document.
+
+In addition, the adapter also extracts text from the technote's reStructedText and inserts that content into Elasticsearch.
