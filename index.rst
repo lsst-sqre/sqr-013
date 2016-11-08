@@ -4,7 +4,7 @@
 
    This technote is a work in progress.
 
-DocHub's Purpose
+DocHub's purpose
 ================
 
 LSST produces a vast number of artifacts on a continual basis.
@@ -21,15 +21,12 @@ Arbitrarily forcing work onto platforms that aren't a good fit for that work red
 
 Instead, our approach is to decouple information discovery from the platforms that information exists on.
 We will index LSST information artifacts, and make their metadata centrally available through a website and search API.
-Then, finding LSST information involves searching through a single website rather than iteratively trawing individual platforms.
+Then, finding LSST information involves searching through a single website rather than iteratively trawling individual platforms.
 This system for indexing LSST information artifacts, storing metadata in a database, and making metadata available through an API and website is called *DocHub*.
 This technote describes LSST DocHub's design.
 
-DocHub Architecture
-===================
-
-Existing Metadata systems
--------------------------
+Existing metadata systems
+=========================
 
 Information discovery is common issue across large, distributed organizations like LSST.
 These are some implementations of DocHub-like systems by other open software and data organizations:
@@ -45,11 +42,25 @@ These metadata systems share a common pattern: metadata is embedded with the inf
 This approach scales well since it federates metadata definition and maintenance to the source repositories themselves.
 DocHub builds upon this design pattern.
 
-JSON-LD Metadata
-================
+DocHub architecture
+===================
 
-JSON-LD Resources
------------------
+DocHub uses a microservice architecture to gain flexibility.
+The components are:
+
+- **A metadata schema.** DocHub uses JSON-LD since it is extensible, yet self describing. Like code.gov and similar implementations, this metadata embedded in source repositories whenever possible.
+  The same metadata format is used in the database.
+- **A metadata database.** DocHub uses a MongoDB database to store all metadata. MongoDB is a document database that works natively with JSON. The JSON-LD that's embedded in source repositories is available through MongoDB.
+- **A full-text database.** While MongoDB is well-suited querying semi-structured data like JSON-LD, its full-text search capabilities are more limited. Where possible, the **content** of documents will be stored and made available through Elasticsearch.
+- **Ingest adapters.** Each adapter is a microservice built to transform content and metadata for a particular type of resource into a JSON-LD record and full-text entry stored in the MongoDB and Elasticsearch database. This adapter architecture helps DocHub scale; indexing a new arbitrary information source involves deploying a new adapter service. These adapter can either by pushed to (say, by a GitHub webhook), or can poll a platform for new and updated records. Each adapter handles the platform specific challenge of transforming either templated JSON-LD stored in a source repository or a platforms native metadata into standardized DocHub JSON-LD.
+- **An API server.** The web API server allows applications to query against DocHub's metadata and full-text databases.
+- **A web front end.** This front end is how people typically use DocHub. This website will allow users to browse and filter DocHub information artifacts, and also provide a generic search against the full-text and metadata databases. The website will be editorially designed to some extent. For example, the front page will show featured projects, papers and documents in addition to giving entry points to search and browse against usefully-selected categories. Generally the website (and API) will allow anonymous access. DocHub can be designed to facilitate authorization-based access to non-public documentation (private GitHub repositories) for example, though this will depend on a centralized user database that doesn't exist in the needed form yet.
+
+DocHub's JSON-LD metadata
+=========================
+
+JSON-LD Reading List
+--------------------
 
 - `JSON-LD best practices <http://json-ld.org/spec/latest/json-ld-api-best-practices/>`__.
 - `Buidling a better book in the browser <http://journal.code4lib.org/articles/10668>`__
