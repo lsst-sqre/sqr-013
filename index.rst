@@ -70,6 +70,113 @@ Metadata at rest in DocHub's database is intended to be complete and authoritati
 Metdata templates are transformed by :ref:`ingest-adapters` into complete JSON-LD stored by DocHub.
 This section describes these DocHub metadata in these two contexts.
 
+JSON-LD in the metadata database
+--------------------------------
+
+DocHub's metadata database is MongoDB so that JSON-LD documents can be persisted and queried natively.
+This design greatly simplifies the API server's design by returning documents in essentially the same form as they are stored.
+MongoDB also obviates schema migrations.
+By building upon JSON-LD and CodeMeta_, the API server is inherently backwards-compatible with any JSON-LD document, even metadata records with new fields not originally known by the API server.
+As new types of fields are added to metadata records, the API server and front-end can evolve independently to provide new functionality based on this data.
+
+Representing versioned resources in JSON-LD and the metadata database
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+From a user's perspective, DocHub is a way to browse software and documentation projects, and see what versions are published on LSST the Docs.
+
+CodeMeta_ JSON-LD is best suited for describing single versions of a project in individual JSON-LD metadata objects.
+But software or documentation artifact (especially one backed by GitHub) is not a single version:
+
+- There are multiple versions of the software and documentation (and its corresponding metadata) and individual branches and tags
+- Multiple editions on LSST the Docs, corresponding to GitHub branches and tags.
+- Zenodo depositions corresponding to tags.
+- An ADS entry
+- JIRA conversations
+- Community.lsst.org conversations.
+
+Although it could be possible to combine all of these resources and versions in a single MongoDB document, treating a MongoDB documents as a holistic description of a project, the schema for combining several JSON-LD resources in a MongoDB document would be ad-hoc.
+Instead, DocHub maps MongoDB documents one-to-one with JSON-LD documents.
+
+In this case, a JSON-LD and MongoDB document would refer to a single branch HEAD or tagged commit.
+
+.. note::
+
+   In this design, DocHub only tracks the HEAD of Git branches and tags. Individual commits aren't tracked. Tracking commits would enable interesting software provenance tracking, but this would also be a significant scope-creep for DocHub. Since LSST the Docs editions only track branches and editions, it makes sense for DocHub to also work at that level.
+
+CodeMeta's ``relationships`` field enables one metadata document to refer to another.
+For one JSON-LD document to refer to its parent Git repository:
+
+.. code-block:: json
+
+   {
+     "@context": "...",
+     "version": "master"
+     "relationships": [
+       {
+         "relationshipType": "isPartOf",
+         "relationshipType": "wasRevisionOf",
+         "namespace": "http://www.w3.org/ns/prov#",
+         "relatedIdentifier": "https://github.com/lsst-sqre/sqr-013.git",
+         "relatedIdentifierType": "URL"
+       }
+     ]
+   }
+
+The ``wasRevisionOf`` relationship type is defined in PROV.
+The PROV ontology includes other relationship types, though CodeMeta_ does not restrict ``relationships`` to use *only* PROV types.
+
+Given this relationship, the MongoDB query for all JSON-LD records belonging to a GitHub project are:
+
+.. code-block:: txt
+
+   find({
+     relationships: {$elemMatch: {relationshipType: "wasRevisionOf",
+                                  relatedIdentifier: "https://github.com/lsst-sqre/sqr-013.git"}}
+   })
+
+It makes sense to use the metadata for the ``master`` branch as the 'main' record for a GitHub repository.
+The ``master`` metadata is queried with:
+
+.. code-block:: txt
+
+   find({
+     version: "master",
+     relationships: {$elemMatch: {relationshipType: "wasRevisionOf",
+                                  relatedIdentifier: "https://github.com/lsst-sqre/sqr-013.git"}}
+   })
+
+Relationships to projects
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+CodeMeta_\ ‘s ``relationships`` field can be used to make other associations, like associating a single GitHub repository to a larger stack.
+For example, we want to associate Science Pipelines packages to Science Pipelines itself.
+
+For this, we'd use a `isPartOf` relationship:
+
+.. code-block:: json
+
+   {
+     "@context": "...",
+     "version": "master"
+     "relationships": [
+       {
+         "relationshipType": "isPartOf",
+         "relatedIdentifier": "https://github.com/lsst/pipelines_docs.git",
+         "relatedIdentifierType": "URL"
+       }
+     ]
+   }
+
+The difficulty
+Choosing a ``relatedIdentifier`` is an unsolved problem.
+In this example, the metadata record is declared as a part of the ``pipelines_docs`` GitHub repo, since ``pipelines_docs`` 'represents' the LSST Science Pipelines.
+
+Alternatively, it might be useful to create JSON-LD metadata records corresponding to a product or product, such as ``lsst_apps``.
+
+.. note::
+
+   `isPartOf <https://schema.org/isPartOf>`_ is a schema.org term.
+
 Embedded metadata templates
 ---------------------------
 
@@ -124,16 +231,6 @@ For example, The ``gitAgents`` interpolator can take additional agents who aren'
 
 These additional agents can be organizations (shown in this example), or additional authors that aren't Git contributors.
 
-
-JSON-LD reading List
---------------------
-
-- `JSON-LD best practices <http://json-ld.org/spec/latest/json-ld-api-best-practices/>`__.
-- `Building a better book in the browser <http://journal.code4lib.org/articles/10668>`__.
-- `Linked Data Patterns <http://patterns.dataincubator.org/book/index.html>`__
-- `Indexing bibliographic linked data with JSON-LD, ElasticSearch <http://journal.code4lib.org/articles/7949>`__.
-- `JSON-LD: Building meaningful data APIs <http://blog.codeship.com/json-ld-building-meaningful-data-apis/>`__.
-
 .. _ingest-adapters:
 
 Ingest Adapters
@@ -175,5 +272,13 @@ Once built, the adapter inserts the JSON-LD object in the resource's MongoDB doc
 
 In addition, the adapter also extracts text from the technote's reStructedText and inserts that content into Elasticsearch.
 
+Appendix: JSON-LD reading list
+==============================
+
+- `JSON-LD best practices <http://json-ld.org/spec/latest/json-ld-api-best-practices/>`__.
+- `Building a better book in the browser <http://journal.code4lib.org/articles/10668>`__.
+- `Linked Data Patterns <http://patterns.dataincubator.org/book/index.html>`__
+- `Indexing bibliographic linked data with JSON-LD, ElasticSearch <http://journal.code4lib.org/articles/7949>`__.
+- `JSON-LD: Building meaningful data APIs <http://blog.codeship.com/json-ld-building-meaningful-data-apis/>`__.
 
 .. CodeMeta: https://github.com/codemeta/codemeta
