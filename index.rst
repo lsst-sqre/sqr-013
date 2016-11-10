@@ -77,7 +77,7 @@ CodeMeta_ JSON-LD object can be cross-walked to other repository metadata schema
 
 DocHub metadata exists in two contexts: the metadata database, and in artifact repositories (such as GitHub repositories).
 Metadata at rest in DocHub's database is intended to be complete and authoritative, while metadata embedded in repositories is *templated*.
-Metadata templates are transformed by :ref:`ingest-adapters` into complete JSON-LD stored by DocHub.
+Metadata templates are transformed by :ref:`ingest adapters <ingest-adapters>` into complete JSON-LD stored by DocHub.
 This section describes these DocHub metadata as it is authoritatively stored in the metadata database.
 § :ref:`metadata-templating` describes metadata templates.
 
@@ -188,6 +188,8 @@ Alternatively, it might be useful to create JSON-LD metadata records correspondi
 
    `isPartOf <https://schema.org/isPartOf>`_ is a schema.org term.
 
+.. _metadata-templating:
+
 JSON-LD metadata templates
 ==========================
 
@@ -260,6 +262,17 @@ Ingest adapters can either be designed for pulling artifact updates, or being pu
 For example, GitHub repositories can emit webhook events that trigger ingest adapters.
 Alternatively, ingest adapters can poll for updates from platforms that do not support webhooks.
 
+Kubernetes deployment pattern
+-----------------------------
+
+Since DocHub is deployed with Kubernetes, adapters are expected to be deployed as Kubernetes pods in the same cluster as the API server and databases.
+
+Adapters that recieve HTTP POST requests from webhooks are configured with Kubernetes ingress resources, which gives them an external IP.
+
+Being in the same cluster, the adapters can directly connect with the MongoDB and Elasticsearch instances, which removes any need for an intermediate API layer.
+This arrangement does require that adapters are trusted.
+Every adapter will need to be managed by DocHub's DevOps team.
+
 Example: Sphinx Technote Adapter
 --------------------------------
 
@@ -285,6 +298,37 @@ The adapter can also GitHub's API to query for structured information that GitHu
 Once built, the adapter inserts the JSON-LD object in the resource's MongoDB document.
 
 In addition, the adapter also extracts text from the technote's reStructedText and inserts that content into Elasticsearch.
+
+DocHub API server
+=================
+
+Authentication and authorization
+--------------------------------
+
+DocHub's API generally requires an auth system:
+
+- Some resources will be embargoed (particularly, draft papers in private GitHub repositories) and classified (for example, access-controlled documents in DocuShare).
+- Some fields *within* resources may be access controlled. For example, there may be a desire to make email addresses in records of people available only to authenticated project and science collaboration users.
+
+LSST does not currently have a general purpose authentication system and user database capable of supporting authorization tasks.
+There are some work-arounds for this:
+
+- Permit DocHub to *only* index public information. The *metadata* or a classified DocuShare document may be considered public and indexed, but the *content* would not be indexed by Elasticsearch. In this case, the metadata adapters are required to enforce data classification.
+- Use GitHub. GitHub OAuth would authenticate users and GitHub's permissions model would be used for authorization. That is, only those who can see a GitHub repository would be able to view it on DocHub. One problem here is that not everyone is LSST is on GitHub. Second, access controls on DocuShare do not map to GitHub organizations.
+- Use Slack. This is a tenable authentication solution since everyone in the project and science collaborations have (or can have) an https://lsstc.slack.com Slack account, making `Slack-based OAuth authentication <https://api.slack.com/docs/sign-in-with-slack>`_  possible. The https://slack.com/api/users.identity endpoint can include information about a user's Slack team memberships. This could be a convenient way of establishing authorization.
+
+In the long term, an ideal solution would be to have a central LSST and community user database.
+That database provide university user authentication.
+It would also be the best place to establish groups that define permissions.
+Indeed, DocuShare, GitHub, Slack permissions and groups ought to be derived from this central database.
+
+In the near term, we can launch DocHub as a completely open system, though a system for checking authorizations should be anticipated in the original design.
+
+RESTful API
+-----------
+
+GraphQL API
+-----------
 
 Appendix: JSON-LD reading list
 ==============================
