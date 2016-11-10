@@ -77,8 +77,9 @@ CodeMeta_ JSON-LD object can be cross-walked to other repository metadata schema
 
 DocHub metadata exists in two contexts: the metadata database, and in artifact repositories (such as GitHub repositories).
 Metadata at rest in DocHub's database is intended to be complete and authoritative, while metadata embedded in repositories is *templated*.
-Metdata templates are transformed by :ref:`ingest-adapters` into complete JSON-LD stored by DocHub.
-This section describes these DocHub metadata in these two contexts.
+Metadata templates are transformed by :ref:`ingest-adapters` into complete JSON-LD stored by DocHub.
+This section describes these DocHub metadata as it is authoritatively stored in the metadata database.
+§ :ref:`metadata-templating` describes metadata templates.
 
 JSON-LD in the metadata database
 --------------------------------
@@ -90,7 +91,7 @@ By building upon JSON-LD and CodeMeta_, the API server is inherently backwards-c
 As new types of fields are added to metadata records, the API server and front-end can evolve independently to provide new functionality based on this data.
 
 Representing versioned resources in JSON-LD and the metadata database
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+---------------------------------------------------------------------
 
 From a user's perspective, DocHub is a way to browse software and documentation projects, and see what versions are published on LSST the Docs.
 
@@ -156,9 +157,9 @@ The ``master`` metadata is queried with:
    })
 
 Relationships to projects
-^^^^^^^^^^^^^^^^^^^^^^^^^
+-------------------------
 
-CodeMeta_\ ‘s ``relationships`` field can be used to make other associations, like associating a single GitHub repository to a larger stack.
+CodeMeta_\ ‘s ``relationships`` field can be used to make other associations, like associating a single GitHub repository to a larger project.
 For example, we want to associate Science Pipelines packages to Science Pipelines itself.
 
 For this, we'd use a `isPartOf` relationship:
@@ -187,8 +188,8 @@ Alternatively, it might be useful to create JSON-LD metadata records correspondi
 
    `isPartOf <https://schema.org/isPartOf>`_ is a schema.org term.
 
-Embedded metadata templates
----------------------------
+JSON-LD metadata templates
+==========================
 
 Although complete JSON-LD metadata documents can be embedded in GitHub (and similar) repositories, managing metadata this way may not be sustainable.
 First, some metadata changes with each commit, and the time of commit (such ``dateModified``).
@@ -198,6 +199,9 @@ Repeating information inherent to the GitHub repository in a metadata file intro
 
 DocHub's approach is to shift the responsibility of building a complete metadata record to the :ref:`ingest adapter <ingest-adapters>`.
 To help the ingest adapter, and to store metadata that *can* be statically managed, we store *metadata templates* in the Git repository.
+
+Interpolation objects
+---------------------
 
 For example, consider the ``licenseId`` field in a DocHub JSON-LD metadata object:
 
@@ -214,20 +218,20 @@ Instead of hard-coding the license's `SPDX Id <https://spdx.org/license-list>`__
 
    {
      "@context": "...",
-     "licenseId": {"@template": "licenseId"}
+     "licenseId": {"@template": "GitHubLicenseId"}
    }
 
-A field, such as ``licenseId`` whose value is an object with a key named ``@template`` triggers the metadata interpolator.
-The value of the ``@template`` is the name of a metadata interpolator (which maps to a specific API in the DocHub metadata interpolation library).
+An object with ``@template`` field is an *interpolation object*.
+The value of ``@template`` is the name of a metadata interpolator known to the :ref:`ingest adapter <ingest-adapter>`.
 
 The interpolation object may contain additional fields that act as arguments to the interpolation function.
-For example, The ``gitAgents`` interpolator can take additional agents who aren't reflected in the Git history:
+For example, The ``GitContributors`` interpolator can take additional agents who aren't reflected in a Git repos's history:
 
 .. code-block:: json
 
    {
      "@context": "...",
-     "agents": {"@template": "gitAgents",
+     "agents": {"@template": "GitContributors",
                 "additionalAgents": [
                   {
                     "@type": "organization",
