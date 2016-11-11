@@ -96,9 +96,13 @@ As new types of fields are added to metadata records, the API server and front-e
    One collection by data class?
    One collection for everything?
 
+JSON-LD Applications
+--------------------
+
+This section explores how different types of metadata can be encoded in CodeMeta_ JSON-LD (and DocHub's extension of it).
 
 Representing versioned resources in JSON-LD and the metadata database
----------------------------------------------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 From a user's perspective, DocHub is a way to browse software and documentation projects, and see what versions are published on LSST the Docs.
 
@@ -163,10 +167,64 @@ The ``master`` metadata is queried with:
                                   relatedIdentifier: "https://github.com/lsst-sqre/sqr-013.git"}}
    })
 
-Relationships to projects
--------------------------
+Related identifiers in ADS and (DOIs)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 CodeMeta_\ ‘s ``relationships`` field can be used to make other associations, like associating a single GitHub repository to a larger project.
+For example, a GitHub repository might also be archived on Zenodo, and have a DOI.
+
+.. code-block:: json
+
+   {
+     "@context": "...",
+     "version": "v1"
+     "relationships": [
+       {
+         "relationshipType": "compiles",
+         "relatedIdentifier": "doi:10.5281/zenodo.153867",
+         "relatedIdentifierType": "DOI"
+       }
+     ]
+   }
+
+This example shows that the ``v1`` tag of this software repository was compiled into the Zenodo archived entity.
+
+The `Zenodo deposition resource documentation <https://zenodo.org/dev#restapi-rep>`_ describes possible ``relationshipType``\ s.
+
+- isCitedBy
+- cites
+- isSupplementTo
+- isSupplementedBy
+- isNewVersionOf
+- isPreviousVersionOf
+- isPartOf
+- hasPart
+- compiles
+- isCompiledBy
+- isIdenticalTo
+- isAlternateIdentifier
+
+``relatedIdentifiers`` supported by Zenodo are:
+
+- DOI
+- Handle
+- ARK
+- PURL
+- ISSN
+- ISBN
+- PubMed ID
+- PubMed Central ID
+- ADS Bibliographic Code
+- arXiv
+- Life Science Identifiers (LSID)
+- EAN-13
+- ISTC
+- URNs and URLs
+
+Relationships to projects
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+``relationships`` can support linking an artifact to larger multi-repository projects.
 For example, we want to associate Science Pipelines packages to Science Pipelines itself.
 
 For this, we'd use a `isPartOf` relationship:
@@ -185,17 +243,17 @@ For this, we'd use a `isPartOf` relationship:
      ]
    }
 
-Choosing a ``relatedIdentifier`` is an unsolved problem.
 In this example, the metadata record is declared as a part of the ``pipelines_docs`` GitHub repo, since ``pipelines_docs`` 'represents' the LSST Science Pipelines.
+(See below for additional relationship types).
 
 Alternatively, it might be useful to create JSON-LD metadata records corresponding to a product or product, such as ``lsst_apps``.
 
 .. note::
 
-   `isPartOf <https://schema.org/isPartOf>`_ is a schema.org term.
+   `isPartOf <https://schema.org/isPartOf>`_ is a schema.org term. It is also in the Zenodo relationship vocabulary.
 
 Representing people in JSON-LD
-------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 In CodeMeta_ JSON-LD, authors specified in an ``agents`` field.
 For example:
@@ -226,7 +284,7 @@ An alternative to ORCiD is to treat metadata records served through DocHub's RES
 The DocHub URL for a person's record becomes their ``@id``.
 
 Representing organizations and copyright holders in JSON-LD
------------------------------------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 In addition to authors, ``agents`` can indicate the involvement of organizations, and even indicate what organizations hold copyright:
 
@@ -277,8 +335,12 @@ Other roles are:
 - ``funder``: party providing monetary support for the resource.
 - ``stakeholder``: party who has an interest in the resource or the use of the resource.
 
+.. seealso::
+
+   `The codelist schema documentation <http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#CI_RoleCode>`_ authoritatively describes these roles.
+
 Describing organizational hierarchy
------------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 One search pattern for DocHub, especially by LSST staff, is to browse artifacts by the organization that made them (LSST subsystems, and teams).
 The ``subOrganization`` type and ``parentOrganization`` build an organizational hierarchy:
@@ -322,6 +384,7 @@ The ``subOrganization`` type and ``parentOrganization`` build an organizational 
 
       ]
    }
+
 
 
 .. _metadata-templating:
