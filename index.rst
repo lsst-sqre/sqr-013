@@ -465,9 +465,9 @@ RESTful API
 
 DocHub API server will provide a basic RESTful API to access JSON-LD documents:
 
-.. code-block::
+.. code-block:: text
 
-   GET https://dochub.lsst.codes/metadata/{{id}}.json
+   GET https://dochub.lsst.codes/metadata/identifier.json
 
 This provides two important features for linked-data datasets:
 
@@ -479,13 +479,13 @@ Implementation
 
 For consistency with LSST Data Management's technology stack, the RESTful API will be deployed as a Flask_ application.
 
-The ID of a DocHub JSON-LD document can be derived from its MongoDB ``ObjectId``, which is a universally unique identiifer for every MongoDB document.
+The ID of a DocHub JSON-LD document can be derived from its MongoDB ``ObjectId``, which is a universally unique identifier for every MongoDB document.
 
 Additional questions
 ^^^^^^^^^^^^^^^^^^^^
 
 1. Should DocHub fully-resolve the metadata of all related resources (as much as is possible) by walking the link tree? This could argument to the HTTP GET request.
-2. Should the RESTful API provide JSON-LD transformation functionality, like `framing <http://json-ld.org/spec/latest/json-ld-framing/>`_ (customizing the representation of a JSON-LD document), `expansion <http://json-ld.org/spec/latest/json-ld-api/#expansion-algorithms>`_ (inlining the context with field names) and `flattening <>`_ (collecting individual field's data and context in separate JSON objects).
+2. Should the RESTful API provide JSON-LD transformation functionality, like `framing <http://json-ld.org/spec/latest/json-ld-framing/>`_ (customizing the representation of a JSON-LD document), `expansion <http://json-ld.org/spec/latest/json-ld-api/#expansion-algorithms>`_ (inlining the context with field names) and `flattening <http://json-ld.org/spec/latest/json-ld/#flattened-document-form>`_ (collecting individual field's data and context in separate JSON objects).
 
 GraphQL API
 -----------
@@ -521,3 +521,4 @@ Appendix: JSON-LD reading list
 .. _CodeMeta: https://github.com/codemeta/codemeta
 .. _GraphQL: http://graphql.org
 .. _Flask: http://flask.pocoo.org
+.. _Graphene: http://graphene-python.org
