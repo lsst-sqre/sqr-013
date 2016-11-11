@@ -385,7 +385,182 @@ The ``subOrganization`` type and ``parentOrganization`` build an organizational 
       ]
    }
 
+Types for non-software artifacts
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+CodeMeta_ JSON-LD was designed to designed to represent software projects, see the ``@type``:
+
+.. code-block:: json
+
+   {
+     "@context":"https://raw.githubusercontent.com/codemeta/codemeta/master/codemeta.jsonld",
+     "@type": "SoftwareSourceCode",
+   }
+
+schema.org types
+""""""""""""""""
+
+``SoftwareSourceCode`` is a schema.org ``@type``: http://schema.org/SoftwareSourceCode.
+`SoftwareSourceCode`_ is derives from a schema.org CreativeWork_.
+
+Some other derived types from schema.org that may be useful are:
+
+- `ScholarlyArticle <http://schema.org/ScholarlyArticle>`_ for peer-reviewed articles.
+- `Conversation <http://schema.org/Conversation>`_, for forum topics or GitHub issue threads.
+- `SocialMediaPosting <http://schema.org/SocialMediaPosting>`_, for tweets.
+
+Zenodo types
+""""""""""""
+
+These are artifact types defined by the Zenodo deposition schema:
+
+TK
+
+Representation of publications
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+schema.org has full support for describing scholarly articles using JSON-LD:
+
+This is Example 2 from ScholarlyArticle_:
+
+.. code-block:: json
+
+   {
+     "@context": "http://schema.org", 
+     "@graph": [
+       {
+           "@id": "#issue", 
+           "@type": "PublicationIssue", 
+           "issueNumber": "5", 
+           "datePublished": "2012", 
+           "isPartOf": {
+               "@id": "#periodical", 
+               "@type": [
+                   "PublicationVolume", 
+                   "Periodical"
+               ], 
+               "name": "Cataloging & Classification Quarterly", 
+               "issn": [
+                   "1544-4554", 
+                   "0163-9374"
+               ], 
+               "volumeNumber": "50", 
+               "publisher": "Taylor & Francis Group"
+           }
+       }, 
+       {
+           "@type": "ScholarlyArticle", 
+           "isPartOf": "#issue", 
+           "description": "The library catalog as a catalog of works was an infectious idea, which together with research led to reconceptualization in the form of the FRBR conceptual model. Two categories of lacunae emerge--the expression entity, and gaps in the model such as aggregates and dynamic documents. Evidence needed to extend the FRBR model is available in contemporary research on instantiation. The challenge for the bibliographic community is to begin to think of FRBR as a form of knowledge organization system, adding a final dimension to classification. The articles in the present special issue offer a compendium of the promise of the FRBR model.", 
+           "sameAs": "http://dx.doi.org/10.1080/01639374.2012.682254", 
+           "about": [
+               "Works", 
+               "Catalog"
+           ], 
+           "pageEnd": "368", 
+           "pageStart": "360", 
+           "name": "Be Careful What You Wish For: FRBR, Some Lacunae, A Review", 
+           "author": "Smiraglia, Richard P."
+       }
+     ]
+   }
+
+And Example 3 from ScholarlyArticle_:
+
+.. code-block:: json
+
+   {
+     "@context": "http://schema.org", 
+     "@graph": [
+       {
+         "@id": "#issue4",
+         "@type": "PublicationIssue",
+         "datePublished": "2006-10",
+         "issueNumber": "4"
+       },
+       {
+         "@id": "#volume50",
+         "@type": "PublicationVolume",
+         "volumeNumber": "50"
+       },
+       {
+         "@id": "#periodical",
+         "@type": "Periodical",
+         "name": "Library Resources and Technical Services"
+       },
+       {
+         "@id": "#article",
+         "@type": "ScholarlyArticle",
+         "author": "Carlyle, Allyson.",
+         "isPartOf": [
+           {
+             "@id": "#periodical"
+           },
+           {
+             "@id": "#volume50"
+           },
+           {
+             "@id": "#issue4"
+           }
+         ],
+         "name": "Understanding FRBR as a Conceptual Model: FRBR and the Bibliographic Universe",
+         "pageEnd": "273",
+         "pageStart": "264"
+       }
+     ]
+   }
+
+Note that **Example 2** uses an ``isPartOf`` relationship on the ScholarlyArticle_
+
+Alternatively, **Example 3** establishes this information with a ``@graph`` containing PublicationIssue_, PublicationVolume_, and Periodical_ objects.
+These three objects are connected to the publication with ``isPartOf``, however there's no explicit relationship between the issue, volume and periodical.
+
+Alternatively **Example 2** is has two objects in its ``@graph``: a PublicationIssue_ (that includes PublicationVolume_ and Periodical_ metadata in its type), and a ScholarlyArticle_.
+The ScholarlyArticle_ links to PublicationIssue_ through an ``isPartOf`` relationship.
+Thus **Example 2** establishes a complete semantic relationship between the article, issue, volume and periodical.
+**Example 2** is preferred.
+
+The schema.org approach is slightly different from CodeMeta_ since it encapsulates several simultaneous relations in a ``relationships`` array.
+This is ideal since it allows us to connect a paper not only to its journal context, but also to associated source code and datasets.
+
+Another different is that DocHub JSON-LD does not tend to use ``@graph``\ s; instead one resource is mapped to a MongoDB document.
+This is one possible approach to using ``relationships`` and folding Journal information into the relationship type:
+
+.. code-block:: json
+
+   {
+     "@context": "...",
+     "@type": "ScholarlyArticle",
+     "relationships": [
+       {
+         "relationshipType": "isSupplementTo",
+         "relatedIdentifier": "https://github.com/lsst/example_analysis_software.git",
+         "relatedIdentifierType": "URL"
+       },
+       {
+         "relationshipType" "isPartOf",
+         "@id": "#issue", 
+         "@type": [
+             "PublicationVolume", 
+             "Periodical",
+             "PublicationIssue"
+         ], 
+         "name": "Cataloging & Classification Quarterly", 
+         "volumeNumber": "50", 
+         "issueNumber": "5",
+         "publisher": "Taylor & Francis Group"
+         "pageEnd": "368",
+         "partStart": "360",
+       },
+       {
+         "relationshipType": "isIdenticalTo",
+         "relatedIdentifier": "doi:...",
+         "relatedIdentifierType": "DOI"
+       },
+     ],
+     "name": "Article's Name",
+     "description": "Article's abstract ..."
+   }
 
 .. _metadata-templating:
 
@@ -585,3 +760,10 @@ Appendix: JSON-LD reading list
 .. _GraphQL: http://graphql.org
 .. _Flask: http://flask.pocoo.org
 .. _Graphene: http://graphene-python.org
+
+.. _SoftwareSourceCode: http://schema.org/SoftwareSourceCode
+.. _CreativeWork: http://schema.org/CreativeWork
+.. _ScholarlyArticle: http://schema.org/ScholarlyArticle
+.. _PublicationIssue: http://schema.org/PublicationIssue
+.. _PublicationVolume: http://schema.org/PublicationVolume
+.. _Periodical: http://schema.org/Periodical
