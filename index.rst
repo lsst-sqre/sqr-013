@@ -90,6 +90,13 @@ MongoDB also obviates schema migrations.
 By building upon JSON-LD and CodeMeta_, the API server is inherently backwards-compatible with any JSON-LD document, even metadata records with new fields not originally known by the API server.
 As new types of fields are added to metadata records, the API server and front-end can evolve independently to provide new functionality based on this data.
 
+.. todo::
+
+   How are collections structured?
+   One collection by data class?
+   One collection for everything?
+
+
 Representing versioned resources in JSON-LD and the metadata database
 ---------------------------------------------------------------------
 
@@ -186,6 +193,136 @@ Alternatively, it might be useful to create JSON-LD metadata records correspondi
 .. note::
 
    `isPartOf <https://schema.org/isPartOf>`_ is a schema.org term.
+
+Representing people in JSON-LD
+------------------------------
+
+In CodeMeta_ JSON-LD, authors specified in an ``agents`` field.
+For example:
+
+.. code-block:: json
+
+   {
+      "@context": "...",
+      "agents": [
+        {
+          "@id": "https://orcid.org/0000-0003-3001-676X",
+          "@type": "person",
+          "email": "jsick@lsst.org",
+          "name": "Jonathan Sick",
+          "affiliation": "AURA/LSST",
+          "mustbeCited": true,
+          "isMaintainer": true,
+          "isRightsHolder": false,
+        }
+      ]
+   }
+
+Note that the ``@id`` field is an ORCiD.
+From a linked-data perspective, adopting ORCiDs as identifiers for people allows us to leverage other data sources, including journals and ADS, more effectively.
+
+ORCiD is not currently required by LSST.
+An alternative to ORCiD is to treat metadata records served through DocHub's RESTful API as authoritative records.
+The DocHub URL for a person's record becomes their ``@id``.
+
+Representing organizations and copyright holders in JSON-LD
+-----------------------------------------------------------
+
+In addition to authors, ``agents`` can indicate the involvement of organizations, and even indicate what organizations hold copyright:
+
+.. code-block:: json
+
+   {
+      "@context": "...",
+      "agents": [
+        {
+          "@type": "organization",
+          "name": "Association of Universities for Research in Astronomy",
+          "isRightsHolder": true,
+          "isMaintainer": false,
+          "role": {
+            "namespace": "http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#CI_RoleCode",
+            "roleCode": "rightsHolder"
+          }
+         },
+      ]
+   }
+
+The ``role`` field provides detailed information about the role an agent plays.
+
+.. note::
+
+   In CodeMeta_, examples show the role as ``copyrightHolder``, however the namespace has a ``rightHolder`` instead.
+
+Other roles are:
+
+- ``resourceProvider``: party that supplies the resource.
+- ``custodian``: party that accepts accountability and responsibility for the data and ensures appropriate care and maintenance of the resource.
+- ``owner``: party that owns the resource.
+- ``sponsor``: party that sponsors the resource.
+- ``user``: party who uses the resource.
+- ``distributor``: party who distributes the resource.
+- ``originator``: party who created the resource.
+- ``pointOfContact``: party who can be contacted for acquiring knowledge about or acquisition of the resource.
+- ``principleInvestorigator``: key party responsible for gathering information and conducting research.
+- ``processor``: party who has processed the data in a manner such that the resource has been modified.
+- ``publisher``: party who published the resource.
+- ``author``: party who authored the resource.
+- ``coAuthor``: party who jointly authors the resource.
+- ``collaborator``: party who assists with the generation of the resource other than the principal investigator.
+- ``editor``: party who reviewed or modified the resource to improve the content.
+- ``mediator``: a class of entity that mediates access to the resource and for whom the resource is intended or useful.
+- ``rightsHolder``: party owning or managing rights over the resource.
+- ``contributor``: party contributing to the resource.
+- ``funder``: party providing monetary support for the resource.
+- ``stakeholder``: party who has an interest in the resource or the use of the resource.
+
+Describing organizational hierarchy
+-----------------------------------
+
+One search pattern for DocHub, especially by LSST staff, is to browse artifacts by the organization that made them (LSST subsystems, and teams).
+The ``subOrganization`` type and ``parentOrganization`` build an organizational hierarchy:
+
+.. code-block:: json
+
+   {
+      "@context": "...",
+      "agents": [
+        {
+          "@type": "organization",
+          "name": "Association of Universities for Research in Astronomy",
+          "isRightsHolder": true,
+          "isMaintainer": false,
+          "role": {
+            "namespace": "http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#CI_RoleCode",
+            "roleCode": "rightsHolder"
+          }
+         },
+         {
+           "@type": "organization",
+           "name": "Large Synoptic Survey Telescope",
+           "parentOrganization": "Association of Universities for Research in Astronomy",
+           "isRightHolder": false,
+           "isMaintainer": false
+         },
+         {
+           "@type": "organization",
+           "name": "Data Management",
+           "parentOrganization": "Large Synoptic Survey Telescope",
+           "isRightHolder": false,
+           "isMaintainer": false
+         },
+         {
+           "@type": "organization",
+           "name": "Science Quality and Reliability Engineering Team",
+           "parentOrganization": "Data Management",
+           "isRightHolder": false,
+           "isMaintainer": true
+         }
+
+      ]
+   }
+
 
 .. _metadata-templating:
 
