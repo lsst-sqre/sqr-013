@@ -81,8 +81,8 @@ Metadata templates are transformed by :ref:`ingest adapters <ingest-adapters>` i
 This section describes these DocHub metadata as it is authoritatively stored in the metadata database.
 § :ref:`metadata-templating` describes metadata templates.
 
-JSON-LD in the metadata database
---------------------------------
+JSON-LD in MongoDB
+------------------
 
 DocHub's metadata database is MongoDB so that JSON-LD documents can be persisted and queried natively.
 This design greatly simplifies the API server's design by returning documents in essentially the same form as they are stored.
@@ -178,7 +178,6 @@ For this, we'd use a `isPartOf` relationship:
      ]
    }
 
-The difficulty
 Choosing a ``relatedIdentifier`` is an unsolved problem.
 In this example, the metadata record is declared as a part of the ``pipelines_docs`` GitHub repo, since ``pipelines_docs`` 'represents' the LSST Science Pipelines.
 
@@ -224,7 +223,7 @@ Instead of hard-coding the license's `SPDX Id <https://spdx.org/license-list>`__
    }
 
 An object with ``@template`` field is an *interpolation object*.
-The value of ``@template`` is the name of a metadata interpolator known to the :ref:`ingest adapter <ingest-adapter>`.
+The value of ``@template`` is the name of a metadata interpolator known to the :ref:`ingest adapter <ingest-adapters>`.
 
 The interpolation object may contain additional fields that act as arguments to the interpolation function.
 For example, The ``GitContributors`` interpolator can take additional agents who aren't reflected in a Git repos's history:
@@ -305,7 +304,7 @@ DocHub API server
 Authentication and authorization
 --------------------------------
 
-DocHub's API generally requires an auth system:
+DocHub's API will require auth infrastructure:
 
 - Some resources will be embargoed (particularly, draft papers in private GitHub repositories) and classified (for example, access-controlled documents in DocuShare).
 - Some fields *within* resources may be access controlled. For example, there may be a desire to make email addresses in records of people available only to authenticated project and science collaboration users.
@@ -327,8 +326,50 @@ In the near term, we can launch DocHub as a completely open system, though a sys
 RESTful API
 -----------
 
+DocHub API server will provide a basic RESTful API to access JSON-LD documents:
+
+.. code-block::
+
+   GET https://dochub.lsst.codes/metadata/{{id}}.json
+
+This provides two important features for linked-data datasets:
+
+1. The URL for a JSON-LD document serves as the universal identifier for a resource, in a linked-data sense. For example, a ``relationships`` field in one JSON-LD document can use a DocHub REST API URL of another artifact as the ``relatedIdentifier``.
+2. Third-party metadata services can ingest this JSON-LD.
+
+Implementation
+^^^^^^^^^^^^^^
+
+For consistency with LSST Data Management's technology stack, the RESTful API will be deployed as a Flask_ application.
+
+The ID of a DocHub JSON-LD document can be derived from its MongoDB ``ObjectId``, which is a universally unique identiifer for every MongoDB document.
+
+Additional questions
+^^^^^^^^^^^^^^^^^^^^
+
+1. Should DocHub fully-resolve the metadata of all related resources (as much as is possible) by walking the link tree? This could argument to the HTTP GET request.
+2. Should the RESTful API provide JSON-LD transformation functionality, like `framing <http://json-ld.org/spec/latest/json-ld-framing/>`_ (customizing the representation of a JSON-LD document), `expansion <http://json-ld.org/spec/latest/json-ld-api/#expansion-algorithms>`_ (inlining the context with field names) and `flattening <>`_ (collecting individual field's data and context in separate JSON objects).
+
 GraphQL API
 -----------
+
+In addition to the RESTful API, DocHub should provide a GraphQL_ API through a ``/graphql`` endpoint.
+Whereas RESTful APIs are oriented towards CRUD operations on resources, GraphQL_ is designed to efficiently populate data in user interfaces, which usually iterate over a subset of data in many resources.
+In REST, its often necessary to build custom endpoints that efficiently provide data to populate a UI.
+With GraphQL_, the query specifies exactly what the shape of the output dataset is.
+
+Implementation
+^^^^^^^^^^^^^^
+
+DataHub's GraphQL API will be implemented with the Graphene_ package *within* the Flask application.
+All GraphQL_ queries are served from a single ``/graphql`` endpoint.
+
+Type system
+^^^^^^^^^^^
+
+GraphQL uses a type system so that the server can validate and resolve GraphQL's arbitrary requests.
+
+.. TODO: design the type system.
 
 Appendix: JSON-LD reading list
 ==============================
@@ -341,3 +382,5 @@ Appendix: JSON-LD reading list
 - `BibJSON <http://okfnlabs.org/bibjson/>`__ describes resources with JSON objects with fields defined in BibTeX. Being JSON, it's also possible to describe these files with JSON-LD.
 
 .. _CodeMeta: https://github.com/codemeta/codemeta
+.. _GraphQL: http://graphql.org
+.. _Flask: http://flask.pocoo.org
