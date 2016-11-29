@@ -801,9 +801,10 @@ All GraphQL_ queries are served from a single ``/graphql`` endpoint.
 Type system
 ^^^^^^^^^^^
 
-GraphQL uses a type system so that the server can validate and resolve GraphQL's arbitrary requests.
+GraphQL uses a `type system <http://graphql.org/learn/schema/>`_ so that the server can validate and resolve GraphQL's arbitrary requests.
+DocHub's GraphQL implementation will need to distill the various types of information expressed in JSON-LD as basic GraphQL types like Person and Organization, and `interfaces <http://graphql.org/learn/schema/#interfaces>`_ like Artifact for hierarchies that include types like SoftwareRepository, GitRef, LsstTheDocsEdition, DocuShareDeposition, ZenodoDeposition, and so forth.
 
-.. TODO: design the type system.
+Overall, the GraphQL API should be designed to efficiently populate DocHub's front-end user interface (whereas the REST and JSON-LD API is designed to be cross-walked to other metadata systems).
 
 .. _json-ld-reading-list:
 
