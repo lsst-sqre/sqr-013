@@ -34,9 +34,9 @@ Information discovery is common issue across large, distributed organizations li
 These are some implementations of DocHub-like systems by other open software and data organizations:
 
 - 18F embeds `.about.yml <https://github.com/18F/about_yml>`__ metadata files in their repositories. These metadata are indexed and published on 18F's `Dashboard <https://18f.gsa.gov/dashboard>`__.
-- Code for America similarly implements a `civic.json <https://github.com/codeforamerica/brigade/blob/master/README-Project-Search.md>`__ metadata format. These are used by Code for America's `project search page <https://www.codeforamerica.org/brigade/projects>`__. Primarily it is used to denote the status of a project and to provide tags for search. Much of information for the search page is also automatically obtained from GitHub metadata, like the project description.
-- Code.gov embeds a `code.json <https://code.gov/#/policy-guide/docs/compliance/inventory-code>`__ file in federal repositories. This metadata is tracked and published by the Code.gov website and API. Additional discussion about code.gov's metadata schema is taking place on `a GitHub issue <https://github.com/presidential-innovation-fellows/code-gov-web/issues/41>`__. Earlier discussion also happened on a White House `source-code-policy <https://github.com/WhiteHouse/source-code-policy/issues/117>` issue.
-- CodeMeta_ is a minimal metadata schema, written in JSON-LD_, that can describe scientific software repositories. CodeMeta's schema is designed to be cross-walked to other 
+- Code for America similarly implements a `civic.json <https://github.com/codeforamerica/brigade/blob/master/README-Project-Search.md>`__ metadata format. These are used by Code for America's `project search page <https://www.codeforamerica.org/brigade/projects>`__. Primarily it is used to denote the status of a project and to provide tags for search. Much of the information for the search page is also automatically obtained from GitHub metadata, like the project description.
+- Code.gov embeds a `code.json <https://code.gov/#/policy-guide/docs/compliance/inventory-code>`__ file in federal repositories. This metadata is tracked and published by the Code.gov website and API. Additional discussion about code.gov's metadata schema is taking place on `a GitHub issue <https://github.com/presidential-innovation-fellows/code-gov-web/issues/41>`__. Earlier discussion also happened on a White House `source-code-policy <https://github.com/WhiteHouse/source-code-policy/issues/117>`_ issue.
+- CodeMeta_ is a minimal metadata schema, written in JSON-LD_, that can describe scientific software repositories. CodeMeta's schema is designed to be cross-walked `to other metadata schemas <https://github.com/codemeta/codemeta/blob/master/crosswalk.csv>`_ including Dublin Core, schema.org, Python's PyPI, and DataCite.
 - `Asset description metadata for software <https://joinup.ec.europa.eu/asset/adms_foss/home>`__ from the EU. See `Issue #41 at codemeta <https://github.com/codemeta/codemeta/issues/41>`__ as well.
 
 These metadata systems share a common pattern: metadata is embedded with the information artifact, centrally indexed, and made available through a search API and website.
@@ -54,8 +54,8 @@ The components are:
 - **A metadata schema.** DocHub uses JSON-LD_ since it is extensible, yet self describing. Like code.gov and similar implementations, this metadata embedded in source repositories whenever possible.
   The same metadata format is used in the database.
 - **A metadata database.** DocHub uses a MongoDB_ database to store all metadata. MongoDB_ is a document database that works natively with JSON. The JSON-LD_ that's embedded in source repositories is available through MongoDB.
-- **A full-text database.** While MongoDB_ is well-suited querying semi-structured data like JSON-LD_, its full-text search capabilities are more limited. Where possible, the **content** of documents will be stored and made available through Elasticsearch.
-- **Ingest adapters.** Each adapter is a microservice built to transform content and metadata for a particular type of resource into a JSON-LD_ record and full-text entry stored in the MongoDB_ and Elasticsearch database. This adapter architecture helps DocHub scale; indexing a new arbitrary information source involves deploying a new adapter service. These adapter can either by pushed to (say, by a GitHub webhook), or can poll a platform for new and updated records. Each adapter handles the platform specific challenge of transforming either templated JSON-LD_ stored in a source repository or a platforms native metadata into standardized DocHub JSON-LD_.
+- **A full-text database.** While MongoDB_ is well-suited to querying semi-structured data like JSON-LD_, its full-text search capabilities are more limited. Where possible, the **content** of documents will be stored and made available through Elasticsearch_.
+- **Ingest adapters.** Each adapter is a microservice built to transform content and metadata for a particular type of resource into a JSON-LD_ record and full-text entry stored in the MongoDB_ and Elasticsearch databases. This adapter architecture helps DocHub scale: indexing a new arbitrary information source involves deploying a new adapter service. Adapters can either by pushed to (say, by a GitHub webhook), or can poll a platform for new and updated records. Each adapter handles the platform specific challenge of transforming either :ref:`templated JSON-LD <metadata-templating>` stored in a source repository or a platform's native metadata into standardized DocHub JSON-LD_.
 - **An API server.** The web API server allows applications to query against DocHub's metadata and full-text databases.
 - **A web front end.** This front end is how people typically use DocHub. This website will allow users to browse and filter DocHub information artifacts, and also provide a generic search against the full-text and metadata databases. The website will be editorially designed to some extent. For example, the front page will show featured projects, papers and documents in addition to giving entry points to search and browse against usefully-selected categories. Generally the website (and API) will allow anonymous access. DocHub can be designed to facilitate authorization-based access to non-public documentation (private GitHub repositories) for example, though this will depend on a centralized user database that doesn't exist in the needed form yet.
 
@@ -74,14 +74,13 @@ DocHub's JSON-LD metadata
 
 All DocHub metadata records share a common JSON-LD_ (linked data) schema.
 Through a ``@context``, JSON-LD_ documents map the names of fields to semantic definitions in http://schema.org and other vocabularies.
-Specifically, DocHub adopts and extends the codemeta_, which is a minimal schema of concepts needed to describe a scientific software repository.
+Specifically, DocHub adopts and extends codemeta_, which is a minimal schema of concepts needed to describe a scientific software repository.
 CodeMeta_ JSON-LD_ object can be cross-walked to other repository metadata schemas to enable automatic submission pipelines from GitHub to a repository like Zenodo, for example.
 
 DocHub metadata exists in two contexts: the metadata database, and in artifact repositories (such as GitHub repositories).
 Metadata at rest in DocHub's database is intended to be complete and authoritative, while metadata embedded in repositories is *templated*.
 Metadata templates are transformed by :ref:`ingest adapters <ingest-adapters>` into complete JSON-LD_ stored by DocHub.
 This section describes these DocHub metadata as it is authoritatively stored in the metadata database.
-§ :ref:`metadata-templating` describes metadata templates.
 
 **See also:** :ref:`json-ld-reading-list`.
 
@@ -89,7 +88,8 @@ JSON-LD in MongoDB
 ------------------
 
 DocHub's metadata database is MongoDB_ so that JSON-LD_ documents can be persisted and queried natively.
-This design greatly simplifies the API server's design by returning documents in essentially the same form as they are stored.
+This design greatly simplifies the RESTful API server by allowing it to return documents in essentially the same form as they are stored.
+
 MongoDB_ also obviates schema migrations.
 By building upon JSON-LD_ and CodeMeta_, the API server is inherently backwards-compatible with any JSON-LD_ document, even metadata records with new fields not originally known by the API server.
 As new types of fields are added to metadata records, the API server and front-end can evolve independently to provide new functionality based on this data.
@@ -122,7 +122,7 @@ Representing versioned resources in JSON-LD and the metadata database
 From a user's perspective, DocHub is a way to browse software and documentation projects, and see what versions are published on LSST the Docs.
 
 CodeMeta_ JSON-LD_ is best suited for describing single versions of a project in individual JSON-LD_ metadata objects.
-But software or documentation artifact (especially one backed by GitHub) is not a single version:
+But a software or documentation artifact (especially one backed by GitHub) is not a single version:
 
 - There are multiple versions of the software and documentation (and its corresponding metadata) and individual branches and tags
 - Multiple editions on LSST the Docs, corresponding to GitHub branches and tags.
@@ -194,7 +194,7 @@ For example, a GitHub repository might also be archived on Zenodo, and have a DO
 
    {
      "@context": "...",
-     "version": "v1"
+     "version": "v1",
      "relationships": [
        {
          "relationshipType": "compiles",
@@ -276,7 +276,7 @@ Alternatively, it might be useful to create JSON-LD_ metadata records correspond
 Representing people in JSON-LD
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-In CodeMeta_ JSON-LD_, authors specified in an ``agents`` field.
+In CodeMeta_ JSON-LD_, authors are specified in an ``agents`` field.
 For example:
 
 .. code-block:: json
@@ -482,7 +482,7 @@ Representation of publications
 
 schema.org_ has full support for describing scholarly articles using JSON-LD_:
 
-This is Example 2 from ScholarlyArticle_:
+This is Example 2 from schema.org's ScholarlyArticle_ documentation:
 
 .. code-block:: json
 
@@ -725,7 +725,7 @@ From the webhook ``POST``, the adapter receives a payload of information about t
 
 From this commit information, the adapter begins to build a metadata record for the repository.
 First, the adapter looks at the ``lsstmeta.json`` file in the repository.
-Most likely, this is a templated JSON-LD_ file (TODO: link to previous section), which requires the adapter to run metadata interpolators to build a complete ``lsstmeta.json`` JSON-LD_ file.
+Most likely, this is a :ref:`templated JSON-LD file <metadata-templating>`, which requires the adapter to run metadata interpolators to build a complete ``lsstmeta.json`` JSON-LD_ file.
 To facilitate this, the adapter performs a shallow clone of the entire repository so that the adapter's interpolation pipeline can scrape metadata from the repository content (such as the document's title and abstract).
 The adapter can also GitHub's API to query for structured information that GitHub has about the repository, such as committers to build authorship metadata, or parsed license information.
 Once built, the adapter inserts the JSON-LD_ object in the resource's MongoDB_ document.
@@ -746,7 +746,7 @@ DocHub's API will require auth infrastructure:
 LSST does not currently have a general purpose authentication system and user database capable of supporting authorization tasks.
 There are some work-arounds for this:
 
-- Permit DocHub to *only* index public information. The *metadata* or a classified DocuShare document may be considered public and indexed, but the *content* would not be indexed by Elasticsearch. In this case, the metadata adapters are required to enforce data classification.
+- Permit DocHub to *only* index public information. The *metadata* of a classified DocuShare document may be considered public and indexed, but the *content* would not be indexed by Elasticsearch. In this case, the metadata adapters are required to enforce data classification.
 - Use GitHub. GitHub OAuth would authenticate users and GitHub's permissions model would be used for authorization. That is, only those who can see a GitHub repository would be able to view it on DocHub. One problem here is that not everyone is LSST is on GitHub. Second, access controls on DocuShare do not map to GitHub organizations.
 - Use Slack. This is a tenable authentication solution since everyone in the project and science collaborations have (or can have) an https://lsstc.slack.com Slack account, making `Slack-based OAuth authentication <https://api.slack.com/docs/sign-in-with-slack>`_  possible. The https://slack.com/api/users.identity endpoint can include information about a user's Slack team memberships. This could be a convenient way of establishing authorization.
 
@@ -825,6 +825,7 @@ Appendix: JSON-LD reading list
 .. _JSON-LD: http://json-ld.org
 .. _MongoDB: https://docs.mongodb.com/manual/
 .. _zenodo_metadata: https://zenodo.org/dev#restapi-rep-meta
+.. _Elasticsearch: https://www.elastic.co/products/elasticsearch
 
 .. _schema.org: http://schema.org
 .. _SoftwareSourceCode: http://schema.org/SoftwareSourceCode
