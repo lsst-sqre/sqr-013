@@ -2,6 +2,8 @@
 
 .. sectnum::
 
+**DOI:** http://dx.doi.org/10.5281/zenodo.189431
+
 Abstract
 ========
 

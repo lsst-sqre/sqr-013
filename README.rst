@@ -1,9 +1,12 @@
-.. img:: https://img.shields.io/badge/developer-lsst.io-brightgreen.svg
-   :target: https://developer.lsst.io
+.. image:: https://img.shields.io/badge/sqr--013-lsst.io-brightgreen.svg
+   :target: https://sqr-013.lsst.io
    :alt: Technote website
-.. img:: https://img.shields.io/travis/lsst-dm/dm_dev_guide/master.svg?maxAge=2592000
-   :target: https://travis-ci.org/lsst-dm/dm_dev_guide
+.. image:: https://img.shields.io/travis/lsst-sqre/sqr-013/master.svg?maxAge=2592000
+   :target: https://travis-ci.org/lsst-sqre/sqr-013
    :alt: Travis build status
+.. image:: https://zenodo.org/badge/doi/10.5281/zenodo.189431.svg
+   :target: http://dx.doi.org/10.5281/zenodo.189431
+   :alt: doi:10.5281/zenodo.189431
 
 ###########################
 SQR-013: LSST DocHub Design
@@ -12,11 +15,6 @@ SQR-013: LSST DocHub Design
 Research and design of a JSON-LD-based metadata database and API for LSST code and documentation repositories.
 
 View this technote at https://sqr-013.lsst.io.
-
-..
-  Uncomment this section and modify the DOI strings to include a Zenodo DOI badge in the README
-  .. image:: https://zenodo.org/badge/doi/10.5281/zenodo.#####.svg
-     :target: http://dx.doi.org/10.5281/zenodo.#####
 
 Build this technical note
 =========================
