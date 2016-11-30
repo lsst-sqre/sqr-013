@@ -2,9 +2,24 @@
 
 .. sectnum::
 
-.. warning::
+Abstract
+========
 
-   This technote is a work in progress.
+LSST DocHub is a proposed solution to information discovery for LSST Data Management, and the LSST project in general.
+LSST documentation and information artifacts are published through a variety of platforms by virtue of the way information is created --- from documents archived on DocuShare, to source code on GitHub, to conversations on `community.lsst.org <https://community.lsst.org>`_.
+Currently, staff and users must go to each platform to find information.
+This has an overall effect of slowing, and even preventing, knowledge sharing.
+**LSST DocHub can solve this problem by decoupling information publication from information discovery.**
+DocHub consists of a unified web front-end for documentation browsing, filtering, and search.
+The front-end is fed by a web API to centralized metadata and full-text databases.
+These databases are populated by *adapters* that monitor each of LSST's information platforms for new and updated artifacts.
+DocHub stores metadata as JSON-LD_, which is a community-standard, extensible, and self-describing schema.
+This technote establishes the basic design concept for DocHub, including its architecture and JSON-LD metadata patterns.
+
+.. note::
+
+   LSST DocHub, as described in this technote, is a work in progress. Details may change, and many design decisions need to be made.
+
 
 DocHub's purpose
 ================
