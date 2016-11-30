@@ -114,6 +114,10 @@ As new types of fields are added to metadata records, the API server and front-e
    One collection per data class?
    Or, one collection for everything?
 
+   How should artifacts that appear in multiple forms be stored? For example, a technote can have multple Git branches and tags on GitHub, multiple published editions on LSST the Docs, multiple DOIs, and an ADS entry.
+   CodeMeta JSON-LD tends to capture single versions of a project (a snapshot of a Git branch/tag, LSST the Docs edition and DOI), see :ref:`json-ld-versioned-resources`.
+   Is there a need for a special class of MongoDB document that combines and caches this versioned metadata in a way that DocHub's API and front-end can efficiently use to build, for example, a page listing all technotes?
+
 JSON-LD Applications
 --------------------
 
